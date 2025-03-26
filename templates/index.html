@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Mini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-black text-white h-screen flex flex-col items-center justify-center">
+    <div class="absolute top-4 left-4 text-2xl font-bold">
+        DeepSeek Mini
+    </div>
+    <div class="text-center mb-8 text-xl font-semibold">
+        What can I help with?
+    </div>
+    <div class="flex items-center bg-gray-800 rounded-full px-4 py-2 w-96">
+        <input id="question" type="text" placeholder="Ask anything..." class="bg-transparent text-white flex-grow focus:outline-none">
+        <button id="send-button" class="ml-2">
+            <i class="fas fa-paper-plane text-white"></i>
+        </button>
+    </div>
+    <div id="response" class="w-3/4 bg-gray-900 p-4 rounded-lg mt-4 hidden overflow-y-auto max-h-96"></div>
+    <script>
+        document.getElementById("send-button").addEventListener("click", async function() {
+            let question = document.getElementById("question").value;
+            if (!question.trim()) return;
+
+            let responseBox = document.getElementById("response");
+            responseBox.style.display = "block";
+            responseBox.innerHTML = `<h2 class='text-lg font-semibold'>Your Question:</h2>
+                                     <p class='mb-2'>${question}</p>
+                                     <h2 class='text-lg font-semibold'>Answer:</h2>
+                                     <p id="answer-text" class='whitespace-pre-line'></p>`;
+
+            let response = await fetch("/chat", {
+                method: "POST",
+                body: JSON.stringify({ question: question }),
+                headers: { "Content-Type": "application/json" }
+            });
+
+            let reader = response.body.getReader();
+            let decoder = new TextDecoder();
+            let answerText = document.getElementById("answer-text");
+
+            while (true) {
+                let { done, value } = await reader.read();
+                if (done) break;
+                answerText.innerHTML += decoder.decode(value, { stream: true });
+            }
+
+            // Ensure MathJax re-renders the LaTeX formulas properly
+            MathJax.typesetPromise().then(() => {
+                console.log("MathJax rendering complete!");
+            }).catch(err => console.error("MathJax error:", err));
+        });
+    </script>
+</body>
+</html>
