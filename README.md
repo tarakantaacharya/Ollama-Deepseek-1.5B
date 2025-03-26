@@ -1,4 +1,4 @@
-### DeepSeek Mini - AI Chatbot
+# DeepSeek Mini - AI Chatbot
 
 This project is a simple AI chatbot using **Ollama** for LLM inference and a frontend built with **HTML, JavaScript (Tailwind CSS)**.
 
